@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ancient African Tribes Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .header {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            max-width: 600px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            color: #2c3e50;
+        }
+        .header p {
+            margin: 0;
+            font-size: 13px;
+            color: #555;
+        }
+        .leaflet-popup-content {
+            margin: 10px;
+            min-width: 200px;
+        }
+        .popup-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .popup-region {
+            font-size: 12px;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        .popup-description {
+            font-size: 13px;
+            color: #34495e;
+            line-height: 1.5;
+        }
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-size: 12px;
+        }
+        .legend h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .legend-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 2px solid white;
+            box-shadow: 0 0 3px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Ancient African Tribes Map</h1>
+        <p>Based on Jehan Desanges' "Catalogue Des Tribus Africaines"<br>
+        <strong>Click markers to view tribe information</strong></p>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="legend">
+        <h4>Regions</h4>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #e74c3c;"></div>
+            <span>Mauretania Tingitane</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #3498db;"></div>
+            <span>Mauretania Césarienne</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #2ecc71;"></div>
+            <span>Africa (Tunisia)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #f39c12;"></div>
+            <span>Cyrenaica & Marmarica</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #9b59b6;"></div>
+            <span>Libye Intérieure (Sahara)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #1abc9c;"></div>
+            <span>Éthiopie Subégyptienne</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([29.0, 10.0], 5);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Define colors for different regions
+        const regionColors = {
+            'Mauretania Tingitane': '#e74c3c',
+            'Mauretania Césarienne': '#3498db',
+            'Africa': '#2ecc71',
+            'Cyrenaica': '#f39c12',
+            'Libye Intérieure': '#9b59b6',
+            'Marmarica': '#f39c12'
+        };
+
+        // Comprehensive tribe data
+        const tribes = [
+            // MAURETANIA TINGITANE (Modern Northern Morocco)
+            { name: "Banioubae", lat: 34.0, lng: -4.5, region: "Mauretania Tingitane", description: "Region between modern Fez and Taza" },
+            { name: "Baniurae", lat: 34.0, lng: -4.6, region: "Mauretania Tingitane", description: "Likely identical to the Banioubae" },
+            { name: "Baquates", lat: 33.5, lng: -4.8, region: "Mauretania Tingitane", description: "The northern Middle-Atlas mountains. Powerful tribe with frequent diplomatic relations with Rome" },
+            { name: "Boniurici(s)", lat: 34.0, lng: -4.55, region: "Mauretania Tingitane", description: "Likely identical to the Banioubae" },
+            { name: "Herpeditani (Tingitane)", lat: 35.0, lng: -2.5, region: "Mauretania Tingitane", description: "Djebel Kebdana (west of the Moulouya River)" },
+            { name: "Iangaukani", lat: 34.0, lng: -5.5, region: "Mauretania Tingitane", description: "Location uncertain, in the vicinity of Volubilis" },
+            { name: "Kauni", lat: 33.0, lng: -5.5, region: "Mauretania Tingitane", description: "Southern edge of the Roman province, south of the Ouerbikae" },
+            { name: "Lixitae", lat: 35.1, lng: -6.1, region: "Mauretania Tingitane", description: "Banks of the Oued Loukkos" },
+            { name: "Macenites", lat: 33.89, lng: -5.54, region: "Mauretania Tingitane", description: "Southern Middle-Atlas and northeastern Haut-Atlas. Name preserved in Meknès" },
+            { name: "Masaesyli (Tingitane)", lat: 35.6, lng: -5.4, region: "Mauretania Tingitane", description: "Small group mentioned near Tétouan and Ceuta" },
+            { name: "Masikes", lat: 35.8, lng: -5.7, region: "Mauretania Tingitane", description: "Coastal region between Cap Spartel and Ceuta" },
+            { name: "Maurënsii", lat: 35.0, lng: -2.8, region: "Mauretania Tingitane", description: "Eastern part of the province, near the Djebel Kebdana" },
+            { name: "Metagônitae", lat: 35.8, lng: -5.6, region: "Mauretania Tingitane", description: "Coastal region between Cap Spartel and Ceuta" },
+            { name: "Nektibëres", lat: 34.5, lng: -5.0, region: "Mauretania Tingitane", description: "Location uncertain" },
+            { name: "Ouakouatae", lat: 34.1, lng: -4.4, region: "Mauretania Tingitane", description: "A fraction of the Baquates. Plain between Fez and Taza" },
+            { name: "Ouerbikae", lat: 34.2, lng: -6.5, region: "Mauretania Tingitane", description: "The Gharb region" },
+            { name: "Oueroueis", lat: 34.7, lng: -5.5, region: "Mauretania Tingitane", description: "Valley of the Oued Ouergha (Rif foothills)" },
+            { name: "Ouoloubiliani", lat: 34.07, lng: -5.55, region: "Mauretania Tingitane", description: "Region surrounding Volubilis (Ksar Pharaoun)" },
+            { name: "Salinsae", lat: 33.97, lng: -6.85, region: "Mauretania Tingitane", description: "Banks of the Oued Bou Regreg (ancient Salat river)" },
+            { name: "Sokossii", lat: 35.9, lng: -5.4, region: "Mauretania Tingitane", description: "Coast west of Ceuta" },
+            { name: "Tinges", lat: 35.76, lng: -5.80, region: "Mauretania Tingitane", description: "Immediate region around Tingi (Tanger)" },
+            { name: "Troglodytes (Tingitane)", lat: 35.0, lng: -6.0, region: "Mauretania Tingitane", description: "Mountains at the source of the Oued Loukkos" },
+            { name: "Zegrènsii", lat: 34.6, lng: -6.0, region: "Mauretania Tingitane", description: "Upper Ouergha valley (Rif foothills), near Banasa" },
+
+            // MAURETANIA CÉSARIENNE (Modern Northern & Central Algeria)
+            { name: "Abannae", lat: 35.5, lng: 4.5, region: "Mauretania Césarienne", description: "Uncertain: Hodna mountains or Atlas Saharien" },
+            { name: "Akouënsii", lat: 36.0, lng: 1.5, region: "Mauretania Césarienne", description: "Region of the Ouarsenis mountains" },
+            { name: "Artennites", lat: 36.2, lng: 2.8, region: "Mauretania Césarienne", description: "Region of Arsennaria (near modern Sidi bou Ras)" },
+            { name: "Avastomates", lat: 36.6, lng: 2.4, region: "Mauretania Césarienne", description: "Region of Tipasa" },
+            { name: "Baiurae", lat: 36.1, lng: 2.0, region: "Mauretania Césarienne", description: "Between the Zaccar and Ouarsenis mountains" },
+            { name: "Baniouri", lat: 36.7, lng: 4.0, region: "Mauretania Césarienne", description: "Coastal Grande Kabylie or Soummam valley" },
+            { name: "Barzufulitani", lat: 36.7, lng: 4.5, region: "Mauretania Césarienne", description: "Grande Kabylie region, near the coast" },
+            { name: "Bavares (Tell Oranais)", lat: 35.7, lng: -0.6, region: "Mauretania Césarienne", description: "Tell Oranais (Oran region)" },
+            { name: "Bavares (Babor)", lat: 36.5, lng: 5.4, region: "Mauretania Césarienne", description: "The Babor mountains" },
+            { name: "Bures", lat: 36.5, lng: 3.5, region: "Mauretania Césarienne", description: "Between Grande Kabylie and Zaccar mountains" },
+            { name: "Cafaves", lat: 36.6, lng: 2.3, region: "Mauretania Césarienne", description: "Region of Tipasa" },
+            { name: "Cantauriani", lat: 36.33, lng: 2.27, region: "Mauretania Césarienne", description: "Region of Tipasa" },
+            { name: "Caprarienses", lat: 35.5, lng: 4.6, region: "Mauretania Césarienne", description: "Uncertain: Hodna mountains or Atlas Saharien" },
+            { name: "Druitae", lat: 34.8, lng: 0.2, region: "Mauretania Césarienne", description: "North of the Saïda mountains" },
+            { name: "Eloulii", lat: 35.2, lng: -0.6, region: "Mauretania Césarienne", description: "Region of Sidi-bel-Abbès" },
+            { name: "Enabasi", lat: 36.0, lng: 4.8, region: "Mauretania Césarienne", description: "Between Haute Soummam and Hodna mountains" },
+            { name: "Feratenses", lat: 36.5, lng: 4.6, region: "Mauretania Césarienne", description: "Mons Ferratus (Djurdjura/Grande Kabylie), near Tubusuctu" },
+            { name: "Fluminenses", lat: 36.6, lng: 4.3, region: "Mauretania Césarienne", description: "Grande Kabylie region" },
+            { name: "Fraxinenses", lat: 36.5, lng: 4.4, region: "Mauretania Césarienne", description: "Uncertain: Grande Kabylie or further east near Khamissa" },
+            { name: "Gebalusii", lat: 36.5, lng: 5.5, region: "Mauretania Césarienne", description: "The Babor mountains" },
+            { name: "Gensani", lat: 36.6, lng: 4.5, region: "Mauretania Césarienne", description: "Likely another name for Quinquegentiani" },
+            { name: "Herpeditani (Césarienne)", lat: 34.8, lng: -2.3, region: "Mauretania Césarienne", description: "Béni Snassen mountains (east of Moulouya)" },
+            { name: "Icampenses", lat: 36.6, lng: 3.7, region: "Mauretania Césarienne", description: "Lower Oued Isser valley" },
+            { name: "Iesalenses", lat: 36.1, lng: 3.9, region: "Mauretania Césarienne", description: "Mountains near Auzia (modern Aumale)" },
+            { name: "Isaflenses", lat: 36.8, lng: 4.2, region: "Mauretania Césarienne", description: "Between Tisser and Tigzirt (Grande Kabylie)" },
+            { name: "Iubalena Natio", lat: 36.3, lng: 4.9, region: "Mauretania Césarienne", description: "The Bibans mountains" },
+            { name: "Khitouae", lat: 36.4, lng: 6.0, region: "Mauretania Césarienne", description: "Middle valley of the Oued el-Kebir (Amsaga)" },
+            { name: "Koidamousii", lat: 36.2, lng: 6.2, region: "Mauretania Césarienne", description: "Upper Oued el-Kebir valley, Sétif-Djémila border" },
+            { name: "M...", lat: 36.0, lng: 5.1, region: "Mauretania Césarienne", description: "The Guergour region (NW of Sétif)" },
+            { name: "Maccues", lat: 36.6, lng: 2.2, region: "Mauretania Césarienne", description: "Region of Cherchel" },
+            { name: "Macurebi", lat: 36.6, lng: 3.5, region: "Mauretania Césarienne", description: "Coastal zone between Zaccar mountains and Grande Kabylie" },
+            { name: "Makhoures", lat: 36.5, lng: 5.6, region: "Mauretania Césarienne", description: "The Babor mountains" },
+            { name: "Makhousii", lat: 36.2, lng: 1.8, region: "Mauretania Césarienne", description: "Coastal region north of Dahra mountains" },
+            { name: "Makkourae", lat: 36.0, lng: 1.6, region: "Mauretania Césarienne", description: "Near the Ouarsenis mountains" },
+            { name: "Marchubi", lat: 36.5, lng: 6.3, region: "Mauretania Césarienne", description: "Mountains near El-Milia and Oued el-Kebir" },
+            { name: "Masat...or.i", lat: 36.0, lng: 2.8, region: "Mauretania Césarienne", description: "Region of Rapidum (Sour Djouab)" },
+            { name: "Masinissenses", lat: 36.4, lng: 4.7, region: "Mauretania Césarienne", description: "Right bank of Soummam river (near M'iakou)" },
+            { name: "Massaesylii (Césarienne)", lat: 35.4, lng: 0.15, region: "Mauretania Césarienne", description: "Region of Mascara" },
+            { name: "Mazices (Césarienne)", lat: 36.3, lng: 2.2, region: "Mauretania Césarienne", description: "South of Zaccar mountains (near Miliana)" },
+            { name: "Moukouni", lat: 36.3, lng: 5.5, region: "Mauretania Césarienne", description: "South of the Babor mountains" },
+            { name: "Mukëni", lat: 36.0, lng: 1.4, region: "Mauretania Césarienne", description: "South of Garapha mountains (possibly Ouarsenis)" },
+            { name: "Musones", lat: 36.1, lng: 2.6, region: "Mauretania Césarienne", description: "Between Zaccar mountains and Arsenaria" },
+            { name: "Musoni", lat: 36.0, lng: 5.3, region: "Mauretania Césarienne", description: "Between Sétif and Hodna mountains" },
+            { name: "N...", lat: 35.8, lng: 5.0, region: "Mauretania Césarienne", description: "Region of Sertei (Kherbet Guidra)" },
+            { name: "Nababes (Isser)", lat: 36.6, lng: 3.8, region: "Mauretania Césarienne", description: "East of the Oued Isser" },
+            { name: "Nababes (Soummam)", lat: 36.5, lng: 4.8, region: "Mauretania Césarienne", description: "Left bank of the Soummam" },
+            { name: "Nakmousii", lat: 35.7, lng: 0.8, region: "Mauretania Césarienne", description: "Region of Relizane or Tiaret" },
+            { name: "Numidae (Césarienne)", lat: 36.0, lng: 4.8, region: "Mauretania Césarienne", description: "NW of Bordj bou Arreridj" },
+            { name: "Quinquegentiani", lat: 36.6, lng: 4.5, region: "Mauretania Césarienne", description: "Grande Kabylie (between Bougie and Dellys). Famous confederation of 'The Five Peoples'" },
+            { name: "Rusuccenses", lat: 36.9, lng: 3.9, region: "Mauretania Césarienne", description: "Region of Rusuccuru (modern Dellys)" },
+            { name: "Salassii", lat: 36.5, lng: 6.2, region: "Mauretania Césarienne", description: "Region of El-Milia" },
+            { name: "Sapadenses", lat: 36.3, lng: 5.5, region: "Mauretania Césarienne", description: "Near Satafi (modern Périgotville)" },
+            { name: "Sôrae", lat: 36.4, lng: 5.0, region: "Mauretania Césarienne", description: "Region of Oued el-Hammam (Sirat plain)" },
+            { name: "Taladousii", lat: 34.9, lng: -1.4, region: "Mauretania Césarienne", description: "North of Tlemcen mountains or Tessala region" },
+            { name: "Todoukae", lat: 36.3, lng: 5.7, region: "Mauretania Césarienne", description: "NE of Sétif, near sources of Amsaga river" },
+            { name: "Tolôtae", lat: 35.0, lng: -0.8, region: "Mauretania Césarienne", description: "Region of Aïn Tellout (near Lamoricière/Altava)" },
+            { name: "Toulënsii", lat: 36.1, lng: 2.5, region: "Mauretania Césarienne", description: "Region of Castellum Tulei (Diar Mami)" },
+            { name: "Tutcenses", lat: 36.5, lng: 3.0, region: "Mauretania Césarienne", description: "Region of Aziz bou-Tellis (N of Saint-Donat)" },
+            { name: "Tyndenses", lat: 36.5, lng: 4.5, region: "Mauretania Césarienne", description: "The Djurdjura mountains" },
+            { name: "Ucutamii", lat: 36.8, lng: 5.8, region: "Mauretania Césarienne", description: "Col de Fdoulès (S of Djidjelli)" },
+            { name: "Zabenses", lat: 36.1, lng: 2.9, region: "Mauretania Césarienne", description: "Region of Tanamusa (Berrouaghia)" },
+            { name: "Zimizes", lat: 36.42, lng: 5.40, region: "Mauretania Césarienne", description: "Region of Choba (Ziama, between Djidjelli and Bougie)" },
+
+            // AFRICA (Modern Tunisia & Eastern Algeria)
+            { name: "Ai...", lat: 36.0, lng: 8.8, region: "Africa", description: "Region of Aubuzza (Hr Zerza)" },
+            { name: "Akhaemae", lat: 33.0, lng: 10.5, region: "Africa", description: "The Djeffara region (S. Tunisia)" },
+            { name: "Amantes", lat: 31.5, lng: 10.0, region: "Africa", description: "Djeffara occidentale (Western Libyan/Southern Tunisian border)" },
+            { name: "Anacutas", lat: 33.5, lng: 10.3, region: "Africa", description: "Near Martae (modern Mareth, S. Tunisia)" },
+            { name: "Areakidae", lat: 35.8, lng: 10.6, region: "Africa", description: "Region of Hadrumetum (modern Sousse)" },
+            { name: "Arzuges", lat: 33.4, lng: 9.0, region: "Africa", description: "Nomads of the Nefzaoua (region of Douz, S. Tunisia)" },
+            { name: "Asphodelodeis", lat: 36.8, lng: 8.8, region: "Africa", description: "Possibly the Khoumirie mountains (NW Tunisia)" },
+            { name: "Astakoures", lat: 33.9, lng: 10.1, region: "Africa", description: "Near the Gulf of Gabès" },
+            { name: "Ausees", lat: 33.7, lng: 8.4, region: "Africa", description: "Banks of Lac Tritonis (area of Chott el-Djerid)" },
+            { name: "Austoriani", lat: 30.0, lng: 15.0, region: "Africa", description: "Nomads wandering between Cyrenaica and Tripolitania" },
+            { name: "Bacchuiana", lat: 36.3, lng: 9.6, region: "Africa", description: "Near Aradi (Bou Arada, N. Tunisia)" },
+            { name: "Bacuenses", lat: 35.2, lng: 8.8, region: "Africa", description: "Saltus Beguensis (between Haïdra and Sbeïtla)" },
+            { name: "Beitani", lat: 36.3, lng: 10.2, region: "Africa", description: "Uncertain; perhaps Djebel Zeriba (S. of Zaghouan)" },
+            { name: "Bozo. s. c.", lat: 35.5, lng: 7.8, region: "Africa", description: "Region of Chéria (E. Algeria)" },
+            { name: "Bubeium", lat: 32.0, lng: 13.0, region: "Africa", description: "Roman limes (border) of Tripolitania" },
+            { name: "Buzakii", lat: 35.0, lng: 10.5, region: "Africa", description: "Byzacium province; Tunisian Sahel (Sousse to Gabès)" },
+            { name: "Capsitani", lat: 34.4, lng: 8.8, region: "Africa", description: "Region of Capsa (modern Gafsa)" },
+            { name: "Chellenses", lat: 35.5, lng: 8.5, region: "Africa", description: "Inhabitants of Cellae (modern Zouarin, W. Tunisia)" },
+            { name: "Cinithi", lat: 33.5, lng: 10.7, region: "Africa", description: "Coastal region south of Thaenae, near Gigthis (Bou Ghara)" },
+            { name: "Cinyphii", lat: 32.39, lng: 14.16, region: "Africa", description: "Banks of Oued Oukirré (18km SE of Lebda, Libya)" },
+            { name: "Cisippades", lat: 31.0, lng: 17.0, region: "Africa", description: "West coast of the Grande Syrte (Libya)" },
+            { name: "Curbissenses", lat: 36.8, lng: 10.6, region: "Africa", description: "Region of Mons Curbessa (modern Korbous, Cap Bon)" },
+            { name: "Dolopes", lat: 33.2, lng: 10.6, region: "Africa", description: "The Djeffara region (S. Tunisia)" },
+            { name: "Elaeones", lat: 32.3, lng: 15.0, region: "Africa", description: "Region of Macomades (Mersa Zafran, Libya)" },
+            { name: "Enipi", lat: 35.5, lng: 5.5, region: "Africa", description: "Region of N'Gaous (W. of oued Barika, Algeria)" },
+            { name: "Erebidae", lat: 33.3, lng: 10.5, region: "Africa", description: "The Djeffara region (S. Tunisia)" },
+            { name: "Eropaei", lat: 33.4, lng: 10.5, region: "Africa", description: "Djeffara region; possibly related to modern Rebâya nomads" },
+            { name: "Frexes", lat: 35.2, lng: 8.5, region: "Africa", description: "Tunisian Dorsal mountains; modern Frechich tribal area (Thala-Kasserine-Tébessa triangle)" },
+            { name: "Gadabitani", lat: 30.1, lng: 9.5, region: "Africa", description: "Region of Cydamus (modern Ghadamès, Libya)" },
+            { name: "Gamphasantes", lat: 26.0, lng: 12.0, region: "Africa", description: "Region of Phazania (Fezzan, Libya), near Ghadamès" },
+            { name: "Garamantes", lat: 26.53, lng: 13.06, region: "Africa", description: "Capital at Garama (modern Djerma) in the Fezzan, Libya. Major Saharan civilization" },
+            { name: "Gëpheis", lat: 34.0, lng: 10.0, region: "Africa", description: "Inland from the Gulf of Gabès" },
+            { name: "Gindanes", lat: 33.1, lng: 11.1, region: "Africa", description: "Region of Ben Gardane (S. Tunisia)" },
+            { name: "Gubul", lat: 35.4, lng: 8.1, region: "Africa", description: "A clan of the Musulames. Region of Theveste (Tébessa)" },
+            { name: "Guzantes", lat: 35.5, lng: 10.8, region: "Africa", description: "Eastern coast of Tunisia (Tunisian Sahel)" },
+            { name: "Haliardi", lat: 36.7, lng: 7.5, region: "Africa", description: "Uncertain; possibly near the Oued Mafragh (E. Algeria)" },
+            { name: "Ifuraces", lat: 32.5, lng: 13.5, region: "Africa", description: "Tripolitania (W. Libya)" },
+            { name: "Iontii", lat: 36.8, lng: 8.3, region: "Africa", description: "Between Hippo Regius (Bône) and Thabraca (Tabarka)" },
+            { name: "Kerophaei", lat: 36.0, lng: 9.0, region: "Africa", description: "North of Tunisian Dorsale; perhaps near Curera (Hr Dermoulia)" },
+            { name: "Kirtësii", lat: 36.4, lng: 6.6, region: "Africa", description: "Inhabitants of the confederation of Cirta (modern Constantine)" },
+            { name: "Laguantan (Tripolitania)", lat: 32.0, lng: 14.0, region: "Africa", description: "Nomads in Tripolitania. Ancestors of modern Lawâta" },
+            { name: "Laguantan (Dorsale)", lat: 35.5, lng: 9.0, region: "Africa", description: "Mountaineers in the Tunisian Dorsale" },
+            { name: "Libyphoenices", lat: 36.0, lng: 9.5, region: "Africa", description: "Region south of Carthage and north of Byzacitis (Tunisian Dorsale)" },
+            { name: "Lotophages", lat: 33.8, lng: 10.9, region: "Africa", description: "Island of Djerba and adjacent Djeffara coast" },
+            { name: "Macares", lat: 34.1, lng: 9.54, region: "Africa", description: "Uncertain; likely Byzacène or Tripolitania" },
+            { name: "Makae", lat: 31.0, lng: 16.0, region: "Africa", description: "Western and Southern coast of Grande Syrte (Libya); summering in Djebel Ghariân" },
+            { name: "Makhlues", lat: 33.8, lng: 8.5, region: "Africa", description: "Banks of Lac Tritonis (area of Chott el-Djerid)" },
+            { name: "Makhrues", lat: 34.20, lng: 9.80, region: "Africa", description: "Inland from the Gulf of Gabès" },
+            { name: "Makhuni", lat: 34.5, lng: 10.3, region: "Africa", description: "Coast between Tunisian Sahel and Gulf of Gabès" },
+            { name: "Mampsari", lat: 35.8, lng: 9.1, region: "Africa", description: "Region of Mactar (likely the Mons Mampsaron)" },
+            { name: "Massyli", lat: 35.3, lng: 6.5, region: "Africa", description: "Numidia; their 'cradle' might be the Aurès mountains" },
+            { name: "Mastraciani", lat: 35.0, lng: 7.0, region: "Africa", description: "Borders of the Aurès and Byzacène" },
+            { name: "Maxitani", lat: 36.85, lng: 10.25, region: "Africa", description: "Region of Carthage" },
+            { name: "Maxues", lat: 34.5, lng: 9.5, region: "Africa", description: "Coast NE of Chott el-Djerid (Tunisian Sahel)" },
+            { name: "Mazaces", lat: 35.8, lng: 7.0, region: "Africa", description: "Numidia" },
+            { name: "Mazices (Africa)", lat: 32.0, lng: 13.0, region: "Africa", description: "Tripolitania (Libya) and oases of Egypt" },
+            { name: "Mazues", lat: 34.5, lng: 10.0, region: "Africa", description: "Uncertain; distinguished from the Maxues" },
+            { name: "Mecales", lat: 32.5, lng: 14.0, region: "Africa", description: "Tripolitania (Libya)" },
+            { name: "Miaidii", lat: 35.6, lng: 9.0, region: "Africa", description: "Region of Mididi (Henchir Midid, SW of Mactar)" },
+            { name: "Midëni", lat: 36.8, lng: 8.7, region: "Africa", description: "The Khoumirie mountains (NW Tunisia)" },
+            { name: "Mikatani", lat: 36.8, lng: 10.2, region: "Africa", description: "Region of Carthage" },
+            { name: "Mimakes", lat: 34.0, lng: 9.0, region: "Africa", description: "Steppes between Tunisian Dorsale and the Djerid" },
+            { name: "Misatovei", lat: 35.4, lng: 7.8, region: "Africa", description: "Region of Chéria (E. Algeria)" },
+            { name: "Misic(t)ri", lat: 36.0, lng: 7.5, region: "Africa", description: "Region of Thullio (Kef béni Feredj, E. Algeria)" },
+            { name: "Motôutourii", lat: 35.7, lng: 9.2, region: "Africa", description: "South of Mons Mampsaron (Mactar region)" },
+            { name: "Moukhthousii", lat: 31.0, lng: 13.0, region: "Africa", description: "South of the Djerid; deserts of Tripolitania" },
+            { name: "Moutourgoures", lat: 32.5, lng: 11.5, region: "Africa", description: "Between Tunisian Dorsale and Djebel Nefousa (Libya)" },
+            { name: "Muduciuuii", lat: 31.2, lng: 16.6, region: "Africa", description: "Region of Syrte (Libya)" },
+            { name: "Mui", lat: 35.5, lng: 8.0, region: "Africa", description: "North of Theveste (Tébessa)" },
+            { name: "Musulames (Tébessa)", lat: 35.4, lng: 8.1, region: "Africa", description: "Main body on the high plains (Tébessa, Kasserine). Major nomadic confederation" },
+            { name: "Musulames (Constantine)", lat: 36.2, lng: 6.7, region: "Africa", description: "Fraction south of Constantine" },
+            { name: "Musuni", lat: 35.2, lng: 8.6, region: "Africa", description: "Region between Cillium (Kasserine) and Thelepte (Fériana)" },
+            { name: "Nabathrae (Africa)", lat: 36.9, lng: 7.4, region: "Africa", description: "Coast west of Hippo Regius (Bône)" },
+            { name: "Naffur", lat: 35.3, lng: 8.6, region: "Africa", description: "Allies of the Frexes. Tunisian Dorsale" },
+            { name: "Nathabres", lat: 33.5, lng: 9.5, region: "Africa", description: "Region of the Eastern Chotts (S. Tunisia)" },
+            { name: "Nattabutes", lat: 36.2, lng: 7.6, region: "Africa", description: "Region of Oued Cherf (near Guelaa bou Atfane, E. Algeria)" },
+            { name: "Nicives (Tigisis)", lat: 36.3, lng: 6.8, region: "Africa", description: "Near Tigisis (Aïn el-Bordj, E. Algeria)" },
+            { name: "Nicives (N'Gaous)", lat: 35.5, lng: 5.6, region: "Africa", description: "Later, region of N'Gaous (W. of oued Barika)" },
+            { name: "Nigitimi", lat: 33.53, lng: 10.07, region: "Africa", description: "Near the petite Syrte (Gulf of Gabès)" },
+            { name: "Nisuetae", lat: 37.0, lng: 10.9, region: "Africa", description: "Uncertain; perhaps Missua (Sidi Daoud, Cap Bon)" },
+            { name: "Niteris", lat: 26.0, lng: 13.5, region: "Africa", description: "Uncertain; part of Balbus's triumph (likely Fezzan)" },
+            { name: "Nukpii", lat: 33.9, lng: 7.9, region: "Africa", description: "Region of Chott Djerid; near Nepte (Nefta)" },
+            { name: "Numidae (Africa - Khamissa)", lat: 36.3, lng: 7.3, region: "Africa", description: "Region of Thubursicu Numidarum (Khamissa)" },
+            { name: "Numidae (Africa - Zouarin)", lat: 35.5, lng: 8.5, region: "Africa", description: "Region of Cellae (Zouarin)" },
+            { name: "Nybgenii", lat: 33.6, lng: 9.3, region: "Africa", description: "South of Chott el-Fedjedj (region of Telmine)" },
+            { name: "Ozoutae", lat: 35.0, lng: 10.3, region: "Africa", description: "Uncertain; inland from Byzacium coast (Tunisian Sahel)" },
+            { name: "Ouzalae", lat: 35.7, lng: 10.1, region: "Africa", description: "Djebel Ousselet (NW of Kairouan)" },
+            { name: "Phazanii", lat: 30.1, lng: 9.6, region: "Africa", description: "Region of Cydamus (modern Ghadamès, Libya)" },
+            { name: "Pisuetae", lat: 33.3, lng: 9.5, region: "Africa", description: "Uncertain; maybe Pisida (bou Chemmakh, S. Tunisia)" },
+            { name: "Saboides", lat: 36.4, lng: 6.6, region: "Africa", description: "Region of Constantine" },
+            { name: "Saci", lat: 35.0, lng: 8.0, region: "Africa", description: "Uncertain; listed with other N. African tribes" },
+            { name: "Samamukii", lat: 31.12, lng: 16.58, region: "Africa", description: "Coast of Grande Syrte; near Zamucii (E. of Syrte, Libya)" },
+            { name: "Seli", lat: 31.1, lng: 16.32, region: "Africa", description: "East of Oued Baï (Libya), near Macomades (Syrte)" },
+            { name: "Severi...", lat: 36.7, lng: 10.0, region: "Africa", description: "Region of Thimida Regia (near Oudna, N. Tunisia)" },
+            { name: "Sigiplonsii", lat: 34.18, lng: 10.04, region: "Africa", description: "West of the Kinithii (Gulf of Gabès region)" },
+            { name: "Silcadenit", lat: 32.0, lng: 13.5, region: "Africa", description: "Uncertain; mentioned with Tripolitanian tribes" },
+            { name: "Sintae", lat: 33.30, lng: 11, region: "Africa", description: "Likely identical to the Cinithi" },
+            { name: "Suburbures (Saint-Arnaud)", lat: 36.3, lng: 5.4, region: "Africa", description: "Main body near Saint-Arnaud/Saint-Donat (E. Algeria)" },
+            { name: "Suburbures (Tigisis)", lat: 36.3, lng: 6.8, region: "Africa", description: "Eastern fraction near Tigisis (Aïn el-Bordj)" },
+            { name: "Suppenses", lat: 36.2, lng: 7.9, region: "Africa", description: "Region of Henchir-Moussa (SE of Thagaste/Souk-Ahras)" },
+            { name: "Tamiagi", lat: 26.5, lng: 13.0, region: "Africa", description: "Uncertain; part of Balbus's triumph (likely Fezzan)" },
+            { name: "Tautamei", lat: 31.12, lng: 16.3, region: "Africa", description: "Syrtic region (Libya)" },
+            { name: "Theriodes", lat: 32.0, lng: 12.0, region: "Africa", description: "Region between petite Syrte (Gulf of Gabès) and the Fezzan" },
+            { name: "Tidamënsii", lat: 30.1, lng: 9.5, region: "Africa", description: "Likely inhabitants of Cydamus (modern Ghadamès)" },
+            { name: "Tisibenenses", lat: 35.8, lng: 7.9, region: "Africa", description: "Region of Ksar el-Boum (N. of Chéria, E. Algeria)" },
+            { name: "Troglodytes (Africa)", lat: 33.3, lng: 10.0, region: "Africa", description: "Region of the Matmata mountains (S. Tunisia)" },
+            { name: "Ursiliani", lat: 32.0, lng: 15.0, region: "Africa", description: "Tripolitania or Cyrenaica" },
+            { name: "Vamacures", lat: 35.3, lng: 6.8, region: "Africa", description: "Region of Macomades (Hr el-Mergueb, N of Aurès)" },
+            { name: "Viscera", lat: 34.85, lng: 5.73, region: "Africa", description: "Region of Vescera (modern Biskra, Algeria)" },
+            { name: "Vofricenses", lat: 36.2, lng: 7.9, region: "Africa", description: "Region of Henchir-Moussa (SE of Thagaste/Souk-Ahras)" },
+            { name: "Zamucii", lat: 31.15, lng: 17.05, region: "Africa", description: "East of Syrte (Libya)" },
+            { name: "Zauêkes", lat: 35.8, lng: 10.5, region: "Africa", description: "Eastern coast of Tunisia (Tunisian Sahel/Djebel Zaghouan)" },
+            { name: "Zouphônes", lat: 35.5, lng: 9.5, region: "Africa", description: "Central Tunisia" },
+
+            // CYRENAICA & MARMARICA (Modern Northern Libya & NW Egypt)
+            { name: "Araraukêles", lat: 32.5, lng: 22.5, region: "Cyrenaica", description: "Between Barkê (El-Merdscheh) and Darnis (Derna)" },
+            { name: "Asbutae", lat: 32.5, lng: 21.8, region: "Cyrenaica", description: "South of Cyrene. Tribe of chariot-drivers" },
+            { name: "Auskhisae", lat: 32.0, lng: 20.2, region: "Cyrenaica", description: "Near Euhesperides (Benghazi); also seasonally in Augila oasis" },
+            { name: "Bakales", lat: 32.5, lng: 20.6, region: "Cyrenaica", description: "Near Taukheira (Tokra); also seasonally in Augila oasis" },
+            { name: "Barcaei", lat: 32.3, lng: 20.5, region: "Cyrenaica", description: "West of Barkê (El-Merdscheh), south of Benghazi" },
+            { name: "Gnade", lat: 32.0, lng: 20.3, region: "Cyrenaica", description: "SE of Benghazi" },
+            { name: "Laganiki", lat: 32.7, lng: 21.7, region: "Cyrenaica", description: "Cave-dwellers in Wady Ierahib (west of Cyrene)" },
+            { name: "Makatoutae", lat: 30.35, lng: 18.35, region: "Cyrenaica", description: "East of the autels des Philènes (border of Grande Syrte)" },
+            { name: "Maketae", lat: 30.31, lng: 18.33, region: "Cyrenaica", description: "Identical to the Makatoutae" },
+            { name: "Nasamones", lat: 30.31, lng: 18.32, region: "Cyrenaica", description: "Coasts of Grande Syrte; seasonally in Augila oasis. Major nomadic tribe" },
+            { name: "Aezari", lat: 29.5, lng: 22.5, region: "Marmarica", description: "South of Marmarican plateau, between Aoudjila and Djaraboub" },
+            { name: "Aneiritae", lat: 32.04, lng: 23.57, region: "Marmarica", description: "Coast between Derna and Sollum" },
+            { name: "Apotomitae", lat: 31.8, lng: 25.0, region: "Marmarica", description: "Inland, west of Sollum" },
+            { name: "Augilae", lat: 29.1, lng: 21.9, region: "Marmarica", description: "Aoudjila (Augila) oasis. Major desert oasis" },
+            { name: "Bassakhitae", lat: 32.04, lng: 23.57, region: "Marmarica", description: "Coast west of Sollum" },
+            { name: "Giligamae", lat: 32.49, lng: 22.38, region: "Marmarica", description: "Coast between Sollum and west of Derna" },
+            { name: "Goniatae", lat: 31.0, lng: 29.8, region: "Marmarica", description: "South of Lac Mareotis (Mariout)" },
+            { name: "Libuarkhae", lat: 32.5, lng: 23.0, region: "Marmarica", description: "Coast from Derna east to Gulf of Bomba" },
+            { name: "Libyes Aegyptii", lat: 28.0, lng: 29.5, region: "Marmarica", description: "Between the Oases (Baharièh, Khargèh) and Nile valley" },
+            { name: "Mareotae", lat: 31.2, lng: 29.9, region: "Marmarica", description: "Region of Lac Mareotis (Mariout)" },
+            { name: "Marmaridae", lat: 31.5, lng: 24.0, region: "Marmarica", description: "General term for tribes of Marmarica (from Benghazi to Marsa Matrouk)" },
+            { name: "Mastitae", lat: 30.4, lng: 30.3, region: "Marmarica", description: "Region of Ouadi Natroun" },
+            { name: "Nitriôtae", lat: 30.4, lng: 30.4, region: "Marmarica", description: "Region of Ouadi Natroun" },
+            { name: "Oasitae", lat: 28.0, lng: 29.0, region: "Marmarica", description: "The Baharièh and Khargèh oases" },
+            { name: "Oibillae", lat: 31.0, lng: 25.5, region: "Marmarica", description: "SE Marmarica, south of Sollum" },
+            { name: "Prosoditae", lat: 30.8, lng: 30.2, region: "Marmarica", description: "Between Lac Mareotis and Ouadi Natroun" },
+            { name: "Sentites", lat: 31.0, lng: 26.0, region: "Marmarica", description: "Interior of Marmarica (NW Egypt)" },
+            { name: "Tapanitae", lat: 28.5, lng: 22.5, region: "Marmarica", description: "SE of the Augila oasis" },
+            { name: "Zugeis", lat: 31.21, lng: 27.19, region: "Marmarica", description: "Coast near Ras el-Kanaïs (E. of Marsa Matrouk)" },
+            { name: "Zugritae", lat: 31.6, lng: 25.9, region: "Marmarica", description: "Coast near Sidi Barrani (between Sollum and Marsa Matrouk)" },
+
+            // LIBYE INTÉRIEURE (The Sahara)
+            { name: "Aganginae", lat: 27.0, lng: -11.0, region: "Libye Intérieure", description: "Borders of Rio de Oro / Morocco / Algeria (S. of Oued Draa)" },
+            { name: "Alitambi", lat: 31.0, lng: 5.0, region: "Libye Intérieure", description: "Grand Erg Oriental (E. Algeria)" },
+            { name: "Anatikoli", lat: 32.5, lng: -7.5, region: "Libye Intérieure", description: "A group of Pharusii. Valley of Oum er Rbia or Tensift" },
+            { name: "Aphrikerônes", lat: 30.0, lng: -7.5, region: "Libye Intérieure", description: "South of the Anti-Atlas" },
+            { name: "Arankae", lat: 25.0, lng: 8.0, region: "Libye Intérieure", description: "Uncertain; Tassili-Ahaggar or region of Ghat/Fort-Polignac" },
+            { name: "Arokkae", lat: 31.0, lng: -7.5, region: "Libye Intérieure", description: "South of Marrakech or Haut-Atlas" },
+            { name: "Asarakae", lat: 26.0, lng: 11.0, region: "Libye Intérieure", description: "East of the Ahaggar; likely Fezzan" },
+            { name: "Autolatae", lat: 33.7, lng: -7.2, region: "Libye Intérieure", description: "Southern confines of Morocco, near Oued Bou Regreg. Powerful Gétulien tribe" },
+            { name: "Babii", lat: 29.0, lng: -9.0, region: "Libye Intérieure", description: "South of the Oued Draa" },
+            { name: "Ballii", lat: 30.0, lng: -8.0, region: "Libye Intérieure", description: "South Morocco, between the Pharusii and the Darae" },
+            { name: "Canarii", lat: 31.5, lng: -3.5, region: "Libye Intérieure", description: "Forests near the Oued Guir (Ger)" },
+            { name: "Cisori", lat: 27.0, lng: 14.0, region: "Libye Intérieure", description: "Fezzan (Libya)" },
+            { name: "Cispii", lat: 31.5, lng: -6.5, region: "Libye Intérieure", description: "Atlas or South Morocco" },
+            { name: "Daphnitae", lat: 33.0, lng: -5.0, region: "Libye Intérieure", description: "Middle-Atlas valleys" },
+            { name: "Darae", lat: 30.5, lng: -6.5, region: "Libye Intérieure", description: "Middle and Upper Oued Draa" },
+            { name: "Daratitae", lat: 28.68, lng: -11.07, region: "Libye Intérieure", description: "Mouth of the Oued Draa" },
+            { name: "Daukhitae", lat: 29.0, lng: 16.0, region: "Libye Intérieure", description: "Djebels south of the Syrtic desert (Libya)" },
+            { name: "Derbikkae", lat: 24.0, lng: 3.0, region: "Libye Intérieure", description: "West of the Ahaggar" },
+            { name: "Dermoneis", lat: 30.0, lng: -4.0, region: "Libye Intérieure", description: "Algerian/Moroccan borders, E. of the Draa" },
+            { name: "Galaules", lat: 33.7, lng: -7.3, region: "Libye Intérieure", description: "Later name for Autololes" },
+            { name: "Girrei", lat: 34.0, lng: 5.5, region: "Libye Intérieure", description: "Inhabitants of the Oued Rirh (Algeria)" },
+            { name: "Harmiae", lat: 30.0, lng: 6.0, region: "Libye Intérieure", description: "Grand Erg Oriental or Fezzan" },
+            { name: "Isbeli", lat: 30.5, lng: 0.5, region: "Libye Intérieure", description: "Grand Erg Occidental" },
+            { name: "Ketiani", lat: 32.5, lng: -3.5, region: "Libye Intérieure", description: "Haute Moulouya (Morocco)" },
+            { name: "Khouritae", lat: 31.5, lng: -6.0, region: "Libye Intérieure", description: "Haut-Atlas or Djebel Sargho" },
+            { name: "Klimatides", lat: 30.0, lng: -7.0, region: "Libye Intérieure", description: "Slopes of the Anti-Atlas (S. Morocco)" },
+            { name: "Leukaethiopes", lat: 31.5, lng: -8.0, region: "Libye Intérieure", description: "'White Ethiopians'. Plain of Marrakech or Souss valley" },
+            { name: "Logonpori", lat: 31.9, lng: 5.3, region: "Libye Intérieure", description: "Region of Ouargla/Touggourt (Algeria)" },
+            { name: "Lunxamatae", lat: 32.0, lng: 13.5, region: "Libye Intérieure", description: "North of the Djebel Ghariân (Libya)" },
+            { name: "Makkourêbi (Libye)", lat: 30.0, lng: -6.0, region: "Libye Intérieure", description: "Middle Oued Draa" },
+            { name: "Malkoae", lat: 30.5, lng: -8.5, region: "Libye Intérieure", description: "South Morocco" },
+            { name: "Mandori", lat: 30.0, lng: -9.0, region: "Libye Intérieure", description: "Slopes of Anti-Atlas (between Souss and Massa)" },
+            { name: "Manrali", lat: 26.0, lng: 8.0, region: "Libye Intérieure", description: "Region of Fort-Flatters (Algeria)" },
+            { name: "Masati", lat: 30.0, lng: -9.5, region: "Libye Intérieure", description: "Banks of the Oued Massa (Morocco)" },
+            { name: "Mausôli", lat: 33.0, lng: -6.0, region: "Libye Intérieure", description: "Slopes of Middle-Atlas (Azrou to Béni Mellal)" },
+            { name: "Mélanogétules", lat: 33.0, lng: 2.0, region: "Libye Intérieure", description: "High Plateaus and Atlas Saharien (from Middle Atlas to Aurès)" },
+            { name: "Nabathrae (Libye)", lat: 29.0, lng: -7.0, region: "Libye Intérieure", description: "Hamada du Draa (S. Morocco)" },
+            { name: "Natembeis", lat: 35.2, lng: 6.3, region: "Libye Intérieure", description: "Northern edge of the Aurès mountains" },
+            { name: "Nigritae", lat: 31.0, lng: -5.5, region: "Libye Intérieure", description: "SE slope of Moroccan Atlas (Upper Draa and Oued Guir)" },
+            { name: "Oechalices", lat: 23.0, lng: 5.5, region: "Libye Intérieure", description: "Upper Oued Ighaghar (Ahaggar region)" },
+            { name: "Orpheis", lat: 30.5, lng: -7.5, region: "Libye Intérieure", description: "Slopes of the Anti-Atlas (near Ifrane)" },
+            { name: "Pharusii", lat: 31.0, lng: -5.5, region: "Libye Intérieure", description: "SE slope of Moroccan Atlas (Upper Draa / Oued Guir). Major Saharan tribe" },
+            { name: "Perorsi", lat: 30.5, lng: -9.0, region: "Libye Intérieure", description: "Likely same as Pharusii. Coast from Oued Noun to Souss valley" },
+            { name: "Sirangae", lat: 33.0, lng: -6.5, region: "Libye Intérieure", description: "South of Bou Regreg, between Middle-Atlas and coast" },
+            { name: "Skënitae", lat: 29.0, lng: 5.0, region: "Libye Intérieure", description: "Between Phazania (Fezzan) and sources of Oued Djedi" },
+            { name: "Soloentii", lat: 32.5, lng: -9.2, region: "Libye Intérieure", description: "Region of Cap Cantin (Morocco)" },
+            { name: "Sophoukaei", lat: 32.3, lng: -9.2, region: "Libye Intérieure", description: "Region of Cap Safi (Morocco)" },
+            { name: "Stakheirae", lat: 31.5, lng: -7.0, region: "Libye Intérieure", description: "Haut-Atlas (Morocco)" },
+            { name: "Taroualtae", lat: 30.0, lng: -7.5, region: "Libye Intérieure", description: "Slopes of the Anti-Atlas" },
+            { name: "Tarraelii", lat: 33.8, lng: 2.9, region: "Libye Intérieure", description: "Region of Laghouat (source of Oued Djedi)" },
+            { name: "Thalae", lat: 30.5, lng: 7.0, region: "Libye Intérieure", description: "Grand Erg Oriental or Fezzan" },
+            { name: "Usibalchi", lat: 30.0, lng: 0.0, region: "Libye Intérieure", description: "Grand Erg Occidental" },
+            { name: "Vesuni", lat: 30.30, lng: -7.9, region: "Libye Intérieure", description: "A clan of Autololes. S. Morocco" },
+            { name: "Xulikkeis", lat: 29.0, lng: -6.0, region: "Libye Intérieure", description: "Hamada du Draa or further east (S. Morocco / Algeria)" },
+            { name: "Zamazii", lat: 32.5, lng: -4.5, region: "Libye Intérieure", description: "Middle-Atlas valleys or Haute Moulouya" },
+
+            // ÉTHIOPIE INTÉRIEURE (Sub-Saharan Africa or Displaced Tribes)
+            { name: "Hesperii", lat: 28.0, lng: -11.0, region: "Libye Intérieure", description: "Southern coast of Morocco (region of Cap Noun)" },
+            { name: "Ikhthuophagi", lat: 27.5, lng: -12.0, region: "Libye Intérieure", description: "Displaced; Atlantic coast of Morocco (south of Cap Noun)" }
+        ];
+
+        // Add markers for all tribes
+        tribes.forEach(tribe => {
+            const markerColor = regionColors[tribe.region] || '#95a5a6';
+            
+            const marker = L.circleMarker([tribe.lat, tribe.lng], {
+                radius: 6,
+                fillColor: markerColor,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            // Create popup content
+            const popupContent = `
+                <div class="popup-title">${tribe.name}</div>
+                <div class="popup-region">${tribe.region}</div>
+                <div class="popup-description">${tribe.description}</div>
+            `;
+
+            marker.bindPopup(popupContent, {
+                maxWidth: 300,
+                className: 'custom-popup'
+            });
+
+            // Add hover effect
+            marker.on('mouseover', function(e) {
+                this.setStyle({
+                    radius: 8,
+                    weight: 3
+                });
+            });
+
+            marker.on('mouseout', function(e) {
+                this.setStyle({
+                    radius: 6,
+                    weight: 2
+                });
+            });
+        });
+
+        console.log(`Total tribes mapped: ${tribes.length}`);
+    </script>
+</body>
+</html>
